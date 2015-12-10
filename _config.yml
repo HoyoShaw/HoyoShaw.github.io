@@ -70,6 +70,26 @@ pagination_dir: page
 ## Themes: http://hexo.io/themes/
 theme: next
 
+index_generator:
+ per_page: 10
+
+archive_generator:
+ per_page: 20
+ yearly: true
+ monthly: true
+
+duoshuo_shortname: hoyoshaw
+
+# 多说热评文章服务
+duoshuo_hotartical: true
+
+# # 多说 分享服务（必须启用多说）
+duoshuo_share: true
+
+swifttype_key: aHjsCVPniHzbQ4kVrHNk
+
+tag_generator:
+ per_page: 10
 # Deployment
 ## Docs: http://hexo.io/docs/deployment.html
 deploy:
