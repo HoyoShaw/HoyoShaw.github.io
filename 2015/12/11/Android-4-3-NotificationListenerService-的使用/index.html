@@ -1,0 +1,821 @@
+<!doctype html>
+<html class="theme-next use-motion theme-next-mist">
+<head>
+  
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+
+  
+    <link href='//fonts.lug.ustc.edu.cn/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+  
+
+
+<link rel="stylesheet" type="text/css" href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" />
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.2"/>
+
+
+    <meta name="description" content="Let's walk around the world." />
+
+
+
+  <meta name="keywords" content="Android,Notification," />
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+
+<meta name="description" content="A service that receives calls from the system when new notifications are posted or removed, or their ranking changed.
+
+官方文档有这么一句话，告诉我们NotificationListenerService可以用来监听到通知的发送以及移除和排名位置变化。那么如果我们注册了这个服务，当">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 4.3+ NotificationListenerService 的使用">
+<meta property="og:url" content="http://yoursite.com/2015/12/11/Android-4-3-NotificationListenerService-的使用/index.html">
+<meta property="og:site_name" content="HoyoShaw's blog">
+<meta property="og:description" content="A service that receives calls from the system when new notifications are posted or removed, or their ranking changed.
+
+官方文档有这么一句话，告诉我们NotificationListenerService可以用来监听到通知的发送以及移除和排名位置变化。那么如果我们注册了这个服务，当">
+<meta property="og:updated_time" content="2015-12-11T10:53:45.365Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 4.3+ NotificationListenerService 的使用">
+<meta name="twitter:description" content="A service that receives calls from the system when new notifications are posted or removed, or their ranking changed.
+
+官方文档有这么一句话，告诉我们NotificationListenerService可以用来监听到通知的发送以及移除和排名位置变化。那么如果我们注册了这个服务，当">
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: 'post'
+  };
+</script>
+
+
+
+  <title> Android 4.3+ NotificationListenerService 的使用 | HoyoShaw's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+
+
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+
+<a href="https://github.com/HoyoShaw"><img style="position: absolute; top: 0; left: 0; border: 0;" src="/images/forkme_left_orange_ff7600.png" alt="Fork me on GitHub"></a>
+
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">HoyoShaw's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">年轻有围，半途而肥</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tools">
+          <a href="/tools" rel="section">
+            
+              <i class="menu-item-icon fa fa-question-circle"></i> <br />
+            
+            工具
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-guestbook">
+          <a href="/guestbook" rel="section">
+            
+              <i class="menu-item-icon fa fa-question-circle"></i> <br />
+            
+            留言
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content"> 
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android 4.3+ NotificationListenerService 的使用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            发表于
+            <time itemprop="dateCreated" datetime="2015-12-11T18:35:15+08:00" content="2015-12-11">
+              2015-12-11
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; 分类于
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/技术/" itemprop="url" rel="index">
+                    <span itemprop="name">技术</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/12/11/Android-4-3-NotificationListenerService-的使用/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/11/Android-4-3-NotificationListenerService-的使用/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          <span id="busuanzi_container_page_pv">&nbsp; | &nbsp;阅读量 <span id="busuanzi_value_page_pv"></span> 次</span>
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><blockquote>
+<p>A service that receives calls from the system when new notifications are posted or removed, or their ranking changed.</p>
+</blockquote>
+<p>官方文档有这么一句话，告诉我们<strong>NotificationListenerService</strong>可以用来监听到通知的发送以及移除和排名位置变化。那么如果我们注册了这个服务，当系统任何一条通知到来或者被移除掉，我们都能通过这个service来监听到，甚至可以做一些管理工作。</p>
+<a id="more"></a>
+<h3 id="如何使用？">如何使用？</h3><p>既然是系统提供的服务，那么申请权限以及在配置文件中声明是基本的套路。在<strong>AndroidManifest</strong>中需要加入以下代码：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">service</span> <span class="attribute">android:name</span>=<span class="value">".NotificationListener"</span></span><br><span class="line">         <span class="attribute">android:label</span>=<span class="value">"@string/service_name"</span></span><br><span class="line">         <span class="attribute">android:permission</span>=<span class="value">"android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="title">intent-filter</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">android:name</span>=<span class="value">"android.service.notification.NotificationListenerService"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="title">intent-filter</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">service</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>这样就声明了我可以拥有处理notification的能力了。但是系统怎么知道你能处理呢？显然，你得向系统申请权限，系统会记录下一些信息，当通知到来或有被移除的时候，会通知所有有权限的应用这条新来的通知对象。<br>那么当你申请权限的时候，系统到底做了啥事儿呢？</p>
+<h3 id="原理分析">原理分析</h3><p>当你首次使用的时候，需要去设置页面开启一个权限，这个页面叫做Notification access，会列出所有申请了这个权限的应用供你选择，勾选了这个应用后，那么对应的上面注册的<strong>NotificationListener</strong>就会被启动起来。</p>
+<p>当我们使用NotificationListenerService的时候，我们只需要继承自它，暴露给我们两个抽象方法：</p>
+<ul>
+<li><p><strong>onNotificationPosted(StatusBarNotification sbn)</strong></p>
+</li>
+<li><p><strong>onNotificationRemoved(StatusBarNotification sbn)</strong></p>
+</li>
+</ul>
+<p>当系统收到一条通知的时候，onNotificationPosted会回调，当从通知栏移除一条通知时，onNotificationPosted会回调。</p>
+<blockquote>
+<p>注意到<strong>StatusBarNotification</strong>这个对象，是系统对notification对象的重新包装，携带了一些基本信息，我们可以拿着这个对象干很多有意思的事情，稍后介绍。</p>
+</blockquote>
+<p>从实现上来看，NotificationListenerService继承自系统的Service，那么这个服务是何时，何地，被谁启动的呢？<br>这里我们不妨猜想一下：</p>
+<ul>
+<li>1.如果我们已经在设置中勾选了应用，必然会触发系统会更新一些设置，如果你有一些android开发经验，可能知道这种更新往往是通过contenprovider更新了一张系统数据表，告诉系统我有这个权限了；</li>
+<li>2.如果已经勾选过，重新开机系统在准备的时候，应该会知道有谁已经有了这个权限，到时候要为这个应用服务；</li>
+<li>3.如果卸载了有权限的应用，应该会告诉系统从权限列表移除数据，显然这里肯定有谁在监听一个广播；</li>
+</ul>
+<p>那么，到底是谁在做这件事儿呢？我们先来分析一下<strong>NotificationListenerService</strong>的实现。<br>查看SDK源码，当绑定服务后，返回的IBinder对象如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"> <span class="annotation">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> IBinder <span class="title">onBind</span><span class="params">(Intent intent)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mWrapper == <span class="keyword">null</span>) &#123;</span><br><span class="line">        mWrapper = <span class="keyword">new</span> INotificationListenerWrapper();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> mWrapper;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">INotificationListenerWrapper</span> <span class="keyword">extends</span> <span class="title">INotificationListener</span>.<span class="title">Stub</span> </span>&#123;</span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNotificationPosted</span><span class="params">(StatusBarNotification sbn)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            NotificationListenerService.<span class="keyword">this</span>.onNotificationPosted(sbn);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">            Log.w(TAG, <span class="string">"Error running onNotificationPosted"</span>, t);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="annotation">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNotificationRemoved</span><span class="params">(StatusBarNotification sbn)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            NotificationListenerService.<span class="keyword">this</span>.onNotificationRemoved(sbn);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">            Log.w(TAG, <span class="string">"Error running onNotificationRemoved"</span>, t);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意到返回的这个binder对象其实是<strong>INotificationListener.Stub</strong>，可以看到onNotificationPosted方法是会被INotificationListener对象调用的，一定有一个客户端得到这个INotificationListener对象，当通知来的时候回调到<strong>NotificationListenerService.this.onNotificationPosted(sbn)</strong>方法，就是我们继承<strong>NotificationListenerService</strong>后需要实现的方法。注意到源码中还有一个方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">final</span> INotificationManager <span class="title">getNotificationInterface</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (mNoMan == <span class="keyword">null</span>) &#123;</span><br><span class="line">        mNoMan = INotificationManager.Stub.asInterface(</span><br><span class="line">                ServiceManager.getService(Context.NOTIFICATION_SERVICE));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> mNoMan;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个mNoman是一个<strong>INotificationManager</strong>对象，并且是通过ServiceManager注册的，有经验的同学应该知道了，类似这种都能在系统中找到对应的服务，所有<strong>NotificationManagerService</strong>就呼之欲出了，我们来分析看看它的源码。</p>
+<h3 id="NotificationmanagerService中的相关源码分析">NotificationmanagerService中的相关源码分析</h3><p>前面我们猜想了可能启动NotificationListenerService的时机，事实上在NotificationmanagerService源码中我们都能找到具体实现。</p>
+<ul>
+<li>开机启动<br>在系统开机的时候，NotificationmanagerService在初始化后，会调用到<strong>systemReady()</strong>方法，如下所示：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">systemReady</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    mAudioService = IAudioService.Stub.asInterface(</span><br><span class="line">            ServiceManager.getService(Context.AUDIO_SERVICE));</span><br><span class="line">    <span class="comment">// no beeping until we're basically done booting</span></span><br><span class="line">    mSystemReady = <span class="keyword">true</span>;</span><br><span class="line">    <span class="comment">// make sure our listener services are properly bound</span></span><br><span class="line">    rebindListenerServices();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>首先会拿到audioservice对象，因为有些通知可以携带声音信息，然后调用<strong>rebindListenerServices</strong>这个关键方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rebindListenerServices</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> currentUser = ActivityManager.getCurrentUser();</span><br><span class="line">        <span class="comment">//通过secure表查出那些注册了ENABLED_NOTIFICATION_LISTENERS</span></span><br><span class="line">        String flat = Settings.Secure.getStringForUser(</span><br><span class="line">                mContext.getContentResolver(),</span><br><span class="line">                Settings.Secure.ENABLED_NOTIFICATION_LISTENERS,</span><br><span class="line">                currentUser);</span><br><span class="line">        NotificationListenerInfo[] toRemove = <span class="keyword">new</span> NotificationListenerInfo[mListeners.size()];</span><br><span class="line">        <span class="keyword">final</span> ArrayList&lt;ComponentName&gt; toAdd;</span><br><span class="line">        <span class="keyword">synchronized</span> (mNotificationList) &#123;</span><br><span class="line">            <span class="comment">// unbind and remove all existing listeners</span></span><br><span class="line">            toRemove = mListeners.toArray(toRemove);</span><br><span class="line">            toAdd = <span class="keyword">new</span> ArrayList&lt;ComponentName&gt;();</span><br><span class="line">            <span class="keyword">final</span> HashSet&lt;ComponentName&gt; newEnabled = <span class="keyword">new</span> HashSet&lt;ComponentName&gt;();</span><br><span class="line">            <span class="keyword">final</span> HashSet&lt;String&gt; newPackages = <span class="keyword">new</span> HashSet&lt;String&gt;();</span><br><span class="line">            <span class="comment">// decode the list of components</span></span><br><span class="line">            <span class="keyword">if</span> (flat != <span class="keyword">null</span>) &#123;</span><br><span class="line">                String[] components = flat.split(ENABLED_NOTIFICATION_LISTENERS_SEPARATOR);</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;components.length; i++) &#123;</span><br><span class="line">                    <span class="keyword">final</span> ComponentName component</span><br><span class="line">                            = ComponentName.unflattenFromString(components[i]);</span><br><span class="line">                    <span class="keyword">if</span> (component != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        newEnabled.add(component);</span><br><span class="line">                        toAdd.add(component);</span><br><span class="line">                        newPackages.add(component.getPackageName());</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                mEnabledListenersForCurrentUser = newEnabled;</span><br><span class="line">                mEnabledListenerPackageNames = newPackages;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (NotificationListenerInfo info : toRemove) &#123;</span><br><span class="line">            <span class="keyword">final</span> ComponentName component = info.component;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> oldUser = info.userid;</span><br><span class="line">            Slog.v(TAG, <span class="string">"disabling notification listener for user "</span> + oldUser + <span class="string">": "</span> + component);</span><br><span class="line">            unregisterListenerService(component, info.userid);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> N = toAdd.size();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;N; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> ComponentName component = toAdd.get(i);</span><br><span class="line">            Slog.v(TAG, <span class="string">"enabling notification listener for user "</span> + currentUser + <span class="string">": "</span></span><br><span class="line">                    + component);</span><br><span class="line">            registerListenerService(component, currentUser);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，首先从secure表中查处哪些应用注册了ENABLED_NOTIFICATION_LISTENERS服务，添加到toAdd列表中，然后把当前已经注册的mListeners全部移除掉，调用<strong> unregisterListenerService(component, info.userid)</strong>移除之后，重新注册toAdd列表中的服务，调用<strong>registerListenerService(component, currentUser)</strong>。可以猜到这两个方法就是去bind或者unbind我们自己实现的<strong>NotificationListenerService</strong>了。</p>
+<blockquote>
+<p>通过secure表查询到的字段，我们可以通过RE浏览器看到里面的数据，在com.android.provider.setting中找到secure表。</p>
+</blockquote>
+<p>接下来在<strong>registerListenerservice</strong>中有如下实现：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">....</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line"> <span class="keyword">if</span> (DBG) Slog.v(TAG, <span class="string">"binding: "</span> + intent);</span><br><span class="line">  <span class="keyword">if</span> (!mContext.bindServiceAsUser(intent,</span><br><span class="line">          <span class="keyword">new</span> ServiceConnection() &#123;</span><br><span class="line">              INotificationListener mListener;</span><br><span class="line">              <span class="annotation">@Override</span></span><br><span class="line">              <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onServiceConnected</span><span class="params">(ComponentName name, IBinder service)</span> </span>&#123;</span><br><span class="line">                  <span class="keyword">synchronized</span> (mNotificationList) &#123;</span><br><span class="line">                      mServicesBinding.remove(servicesBindingTag);</span><br><span class="line">                      <span class="keyword">try</span> &#123;</span><br><span class="line">                          mListener = INotificationListener.Stub.asInterface(service);</span><br><span class="line">                          NotificationListenerInfo info = <span class="keyword">new</span> NotificationListenerInfo(</span><br><span class="line">                                  mListener, name, userid, <span class="keyword">this</span>);</span><br><span class="line">                          service.linkToDeath(info, <span class="number">0</span>);</span><br><span class="line">                          mListeners.add(info);</span><br><span class="line">                      &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">                          <span class="comment">// already dead</span></span><br><span class="line">                      &#125;</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">              <span class="annotation">@Override</span></span><br><span class="line">              <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onServiceDisconnected</span><span class="params">(ComponentName name)</span> </span>&#123;</span><br><span class="line">                  Slog.v(TAG, <span class="string">"notification listener connection lost: "</span> + name);</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          Context.BIND_AUTO_CREATE,</span><br><span class="line">          <span class="keyword">new</span> UserHandle(userid)))</span><br><span class="line">                    </span><br><span class="line">                    ...</span><br></pre></td></tr></table></figure></p>
+<p>这部分代码大家应该比较熟悉了，跟平时用AIDL服务一样，我们注册的<strong>NotificationListenerService</strong>服务在这里通过<br><code>INotificationListener.Stub.asInterface(service);</code>转换成需要的INotificationListener对象，将它加入到mListeners集合中，然后就可以通过这个对象回调到我们自己注册的服务代码中了。</p>
+<ul>
+<li><p>用户在设置中开启权限的时候<br>这种情况下，由于<strong>NotificationManagerService</strong>中使用<code>ContentObserver</code>监听了<code>SettingProvider</code>的变化，当secure数据表发生变化，也会调用<strong>rebindListenerServices</strong>重新绑定服务。如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SettingsObserver</span> <span class="keyword">extends</span> <span class="title">ContentObserver</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> Uri NOTIFICATION_LIGHT_PULSE_URI</span><br><span class="line">                = Settings.System.getUriFor(Settings.System.NOTIFICATION_LIGHT_PULSE);</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> Uri ENABLED_NOTIFICATION_LISTENERS_URI</span><br><span class="line">                = Settings.Secure.getUriFor(Settings.Secure.ENABLED_NOTIFICATION_LISTENERS);</span><br><span class="line">        SettingsObserver(Handler handler) &#123;</span><br><span class="line">            <span class="keyword">super</span>(handler);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">observe</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            ContentResolver resolver = mContext.getContentResolver();</span><br><span class="line">            resolver.registerContentObserver(NOTIFICATION_LIGHT_PULSE_URI,</span><br><span class="line">                    <span class="keyword">false</span>, <span class="keyword">this</span>, UserHandle.USER_ALL);</span><br><span class="line">            resolver.registerContentObserver(ENABLED_NOTIFICATION_LISTENERS_URI,</span><br><span class="line">                    <span class="keyword">false</span>, <span class="keyword">this</span>, UserHandle.USER_ALL);</span><br><span class="line">            update(<span class="keyword">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="annotation">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onChange</span><span class="params">(<span class="keyword">boolean</span> selfChange, Uri uri)</span> </span>&#123;</span><br><span class="line">            update(uri);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">update</span><span class="params">(Uri uri)</span> </span>&#123;</span><br><span class="line">            ContentResolver resolver = mContext.getContentResolver();</span><br><span class="line">            <span class="keyword">if</span> (uri == <span class="keyword">null</span> || NOTIFICATION_LIGHT_PULSE_URI.equals(uri)) &#123;</span><br><span class="line">                <span class="keyword">boolean</span> pulseEnabled = Settings.System.getInt(resolver,</span><br><span class="line">                            Settings.System.NOTIFICATION_LIGHT_PULSE, <span class="number">0</span>) != <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">if</span> (mNotificationPulseEnabled != pulseEnabled) &#123;</span><br><span class="line">                    mNotificationPulseEnabled = pulseEnabled;</span><br><span class="line">                    updateNotificationPulse();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (uri == <span class="keyword">null</span> || ENABLED_NOTIFICATION_LISTENERS_URI.equals(uri)) &#123;</span><br><span class="line">                rebindListenerServices();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>通过广播监听<br>当监听到注册了<strong>NotificationListenerService</strong>的应用被卸载时，同样会调用<strong>rebindListenerServices</strong>重新绑定服务，之后的流程跟前面分析一样。</p>
+<blockquote>
+<p>这部分代码较长，由于篇幅原因就不贴出来了，大家可以自行查看源码。</p>
+</blockquote>
+</li>
+</ul>
+<p>上面就是<strong>NotificationListenerService</strong>的启动情况。既然服务已经启动了，那么当有通知到来或者删除的时候，怎么告诉注册的这些应用呢？前面分析到，注册的服务都会被添加到一个<strong>mListeners</strong>的集合中，我们猜想当通知到来的时候，NotificationListenerService肯定会遍历整个集合，然后调用listener的<strong>onNotificationPosted(sbnf)</strong>方法。平时我们在发送通知的时候，是通过NotificationManager对象调用notify发送，其实最终都是通过<strong>NotificationManagerService</strong>来完成的，我们看源码，在<strong>NotificationManager</strong>中：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notify</span><span class="params">(String tag, <span class="keyword">int</span> id, Notification notification)</span></span><br><span class="line">   </span>&#123;</span><br><span class="line">      ...</span><br><span class="line">       <span class="keyword">try</span> &#123;</span><br><span class="line">           service.enqueueNotificationWithTag(pkg, mContext.getOpPackageName(), tag, id,</span><br><span class="line">                   notification, idOut, UserHandle.myUserId());</span><br><span class="line">           ...</span><br><span class="line">       &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里的service对象显然是<strong>NotificationManagerService</strong>，调用其enqueueNotificationWithTag发送一条通知，接下来辗转调用到<strong>notifyPostedLocked()</strong>，这里就符合了我们上面的猜想：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">notifyPostedLocked</span><span class="params">(NotificationRecord n)</span> </span>&#123;</span><br><span class="line">       <span class="comment">// make a copy in case changes are made to the underlying Notification object</span></span><br><span class="line">       <span class="keyword">final</span> StatusBarNotification sbn = n.sbn.clone();</span><br><span class="line">       <span class="keyword">for</span> (<span class="keyword">final</span> NotificationListenerInfo info : mListeners) &#123;</span><br><span class="line">           mHandler.post(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">               <span class="annotation">@Override</span></span><br><span class="line">               <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                   info.notifyPostedIfUserMatch(sbn);</span><br><span class="line">               &#125;&#125;);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看到这里遍历mListeners集合，调用notifyPostedIfUserMatch方法，到这里我们可以知道离我们想要看到的方法已经不远了。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">notifyPostedIfUserMatch</span><span class="params">(StatusBarNotification sbn)</span> </span>&#123;</span><br><span class="line">         <span class="keyword">if</span> (!enabledAndUserMatches(sbn)) &#123;</span><br><span class="line">             <span class="keyword">return</span>;</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">try</span> &#123;</span><br><span class="line">             listener.onNotificationPosted(sbn);</span><br><span class="line">         &#125; <span class="keyword">catch</span> (RemoteException ex) &#123;</span><br><span class="line">             Log.e(TAG, <span class="string">"unable to notify listener (posted): "</span> + listener, ex);</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br></pre></td></tr></table></figure></p>
+<p>终于，我们熟悉的方法看到了，这不就是我们自己注册服务中的方法吗？这样整个调用链就清晰了。</p>
+<blockquote>
+<p>这里我们可以发现一个有意思的地方，如果我们注册了这个服务，当系统有通知到来的时候，会回调这个服务。如果有些应用有常驻进程，当由于某些原因常驻进程挂掉了，这是不是有一定机会系统帮我们唤醒了进程呢？</p>
+<p>另外的删除通知类似，这里就不再分析了。</p>
+</blockquote>
+<p>现在总结一下整个流程：<br>从整体上来看，<strong>NotificationListenerService</strong>相当于一个本地代理，真正起到控制作用的是<strong>NotificationManagerService</strong>。通过三种方式注册到<strong>NotificationManagerService</strong>中的listeners会保存在一个集合中，当通知到来的时候，会遍历整个集合回调listener中的方法。</p>
+<h3 id="取消通知">取消通知</h3><p><strong>NotificationListenerService</strong>还提供了一个方法，可以取消到收到的通知，如果用户使用了这个服务，可以对收到的通知取消，那么在通知栏上我们就看不到这条通知了。这对于有洁癖的用户来说，这也许是一个好方法。</p>
+<pre><code>- <span class="function"><span class="title">cancelNotification</span><span class="params">(String pkg, String tag, int id)</span></span>
+- <span class="function"><span class="title">cancelAllNotifications</span><span class="params">()</span></span> 
+- <span class="function"><span class="title">cancelNotification</span><span class="params">(String key)</span></span> <span class="number">5.0</span>
+</code></pre><p>看名字知道这两个方法的作用。5.0以后，第一个方法过期了，所以这个方法取消不了5.0版本以后发送的通知，第三个方法是5.0提供的方法。</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Notification/" rel="tag">#Notification</a>
+          
+        </div>
+      
+
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2015/12/11/Android-4-3-NotificationListenerService-的使用/"
+     data-title="Android 4.3+ NotificationListenerService 的使用"
+     data-content=""
+     data-url="http://yoursite.com/2015/12/11/Android-4-3-NotificationListenerService-的使用/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+ </div>
+
+        
+            <!-- 多说热评文章-->
+            <p>热评文章</p>
+            <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+        
+
+        
+          <div class="comments" id="comments">
+            
+              <div class="ds-thread" data-thread-key="2015/12/11/Android-4-3-NotificationListenerService-的使用/"
+                   data-title="Android 4.3+ NotificationListenerService 的使用" data-url="http://yoursite.com/2015/12/11/Android-4-3-NotificationListenerService-的使用/">
+              </div>
+            
+          </div>
+        
+      </div>
+
+      
+        
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.jpg" alt="Hoyo Shaw" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">Hoyo Shaw</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description">Let's walk around the world.</p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">1</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            <a href="/categories">
+              <span class="site-state-item-count">1</span>
+              <span class="site-state-item-name">分类</span>
+              </a>
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-name">标签</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#如何使用？"><span class="nav-number">1.</span> <span class="nav-text">如何使用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理分析"><span class="nav-number">2.</span> <span class="nav-text">原理分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NotificationmanagerService中的相关源码分析"><span class="nav-number">3.</span> <span class="nav-text">NotificationmanagerService中的相关源码分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#取消通知"><span class="nav-number">4.</span> <span class="nav-text">取消通知</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+      
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner"> <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+<div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2015</span>
+  <span class="with-love">
+    <i class="icon-next-heart fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hoyo Shaw</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+<div class="busuanzi">
+  <span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  </span>
+
+  <span id="busuanzi_container_site_uv">
+     &nbsp;     本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  </span>
+</div>
+
+
+
+
+
+
+
+ </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"hoyoshaw"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+
+    
+  
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/js/motion_global.js?v=0.4.5.2" id="motion.global"></script>
+
+
+
+
+  <script type="text/javascript" src="/js/nav-toggle.js?v=0.4.5.2"></script>
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.2" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 0.4 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    var $tocContent = $('.post-toc-content');
+    if (isDesktop() && CONFIG.sidebar === 'post') {
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+        displaySidebar();
+      }
+    }
+  });
+</script>
+
+
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      if (CONFIG.sidebar === 'always') {
+        displaySidebar();
+      }
+      if (isMobile()) {
+        FastClick.attach(document.body);
+      }
+
+      motionIntegrator.bootstrap();
+    });
+  </script>
+
+  
+  
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/lazyload.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $("#posts").find('img').lazyload({
+        placeholder: "/images/loading.gif",
+        effect: "fadeIn"
+      });
+    });
+  </script>
+</body>
+</html>
