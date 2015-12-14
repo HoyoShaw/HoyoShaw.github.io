@@ -12,7 +12,7 @@ timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: http://hoyoshaw.github.io
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -79,6 +79,12 @@ archive_generator:
  monthly: true
 
 duoshuo_shortname: hoyoshaw
+
+#sitemap 
+sitemap: 
+path: sitemap.xml
+baidusitemap:
+path: baidusitemap.xml
 
 # 多说热评文章服务
 duoshuo_hotartical: true
