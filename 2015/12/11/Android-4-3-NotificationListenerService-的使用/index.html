@@ -55,7 +55,7 @@
 <meta property="og:description" content="A service that receives calls from the system when new notifications are posted or removed, or their ranking changed.
 
 官方文档有这么一句话，告诉我们NotificationListenerService可以用来监听到通知的发送以及移除和排名位置变化。那么如果我们注册了这个服务，当">
-<meta property="og:updated_time" content="2015-12-11T10:53:45.365Z">
+<meta property="og:updated_time" content="2015-12-15T07:39:23.866Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 4.3+ NotificationListenerService 的使用">
 <meta name="twitter:description" content="A service that receives calls from the system when new notifications are posted or removed, or their ranking changed.
@@ -295,6 +295,7 @@
 </blockquote>
 <p>官方文档有这么一句话，告诉我们<strong>NotificationListenerService</strong>可以用来监听到通知的发送以及移除和排名位置变化。那么如果我们注册了这个服务，当系统任何一条通知到来或者被移除掉，我们都能通过这个service来监听到，甚至可以做一些管理工作。</p>
 <a id="more"></a>
+<p>[TOC]</p>
 <h3 id="如何使用？">如何使用？</h3><p>既然是系统提供的服务，那么申请权限以及在配置文件中声明是基本的套路。在<strong>AndroidManifest</strong>中需要加入以下代码：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">service</span> <span class="attribute">android:name</span>=<span class="value">".NotificationListener"</span></span><br><span class="line">         <span class="attribute">android:label</span>=<span class="value">"@string/service_name"</span></span><br><span class="line">         <span class="attribute">android:permission</span>=<span class="value">"android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="title">intent-filter</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="title">action</span> <span class="attribute">android:name</span>=<span class="value">"android.service.notification.NotificationListenerService"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="title">intent-filter</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">service</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
 <p>这样就声明了我可以拥有处理notification的能力了。但是系统怎么知道你能处理呢？显然，你得向系统申请权限，系统会记录下一些信息，当通知到来或有被移除的时候，会通知所有有权限的应用这条新来的通知对象。<br>那么当你申请权限的时候，系统到底做了啥事儿呢？</p>
 <h3 id="原理分析">原理分析</h3><p>当你首次使用的时候，需要去设置页面开启一个权限，这个页面叫做Notification access，会列出所有申请了这个权限的应用供你选择，勾选了这个应用后，那么对应的上面注册的<strong>NotificationListener</strong>就会被启动起来。</p>
@@ -371,6 +372,20 @@
         </div>
       
 
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/12/15/通知管理功能与常驻通知栏的设计与实现/" rel="prev">
+                <i class="fa fa-chevron-left"></i> 通知管理功能与常驻通知栏的设计与实现
+              </a>
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+        </div>
       
 
       
@@ -457,14 +472,14 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">1</span>
+              <span class="site-state-item-count">2</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">1</span>
+              <span class="site-state-item-count">2</span>
               <span class="site-state-item-name">分类</span>
               </a>
           </div>

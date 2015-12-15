@@ -1,0 +1,859 @@
+<!doctype html>
+<html class="theme-next use-motion theme-next-mist">
+<head>
+  
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+
+  
+    <link href='//fonts.lug.ustc.edu.cn/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+  
+
+
+<link rel="stylesheet" type="text/css" href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" />
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.2"/>
+
+
+    <meta name="description" content="Let's walk around the world." />
+
+
+
+  <meta name="keywords" content="Android,Notification," />
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+
+<meta name="description" content="Android 4.3开始系统开放了NotificationListenerService API,让应用管理通知提供了可能，本文系统描述清理大师通知管理模块的设计与实现方式，以及开发过程中遇到问题和解决方案。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通知管理功能与常驻通知栏的设计与实现">
+<meta property="og:url" content="http://hoyoshaw.github.io/2015/12/15/通知管理功能与常驻通知栏的设计与实现/index.html">
+<meta property="og:site_name" content="HoyoShaw's blog">
+<meta property="og:description" content="Android 4.3开始系统开放了NotificationListenerService API,让应用管理通知提供了可能，本文系统描述清理大师通知管理模块的设计与实现方式，以及开发过程中遇到问题和解决方案。">
+<meta property="og:updated_time" content="2015-12-15T07:41:33.554Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="通知管理功能与常驻通知栏的设计与实现">
+<meta name="twitter:description" content="Android 4.3开始系统开放了NotificationListenerService API,让应用管理通知提供了可能，本文系统描述清理大师通知管理模块的设计与实现方式，以及开发过程中遇到问题和解决方案。">
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: 'post'
+  };
+</script>
+
+
+
+  <title> 通知管理功能与常驻通知栏的设计与实现 | HoyoShaw's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+
+
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+
+<a href="https://github.com/HoyoShaw"><img style="position: absolute; top: 0; left: 0; border: 0;" src="/images/forkme_left_orange_ff7600.png" alt="Fork me on GitHub"></a>
+
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">HoyoShaw's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">年轻有围，半途而肥</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tools">
+          <a href="/tools" rel="section">
+            
+              <i class="menu-item-icon fa fa-question-circle"></i> <br />
+            
+            工具
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-guestbook">
+          <a href="/guestbook" rel="section">
+            
+              <i class="menu-item-icon fa fa-question-circle"></i> <br />
+            
+            留言
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content"> 
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                通知管理功能与常驻通知栏的设计与实现
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            发表于
+            <time itemprop="dateCreated" datetime="2015-12-15T15:38:37+08:00" content="2015-12-15">
+              2015-12-15
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; 分类于
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android-技术/" itemprop="url" rel="index">
+                    <span itemprop="name">Android 技术</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2015/12/15/通知管理功能与常驻通知栏的设计与实现/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2015/12/15/通知管理功能与常驻通知栏的设计与实现/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          <span id="busuanzi_container_page_pv">&nbsp; | &nbsp;阅读量 <span id="busuanzi_value_page_pv"></span> 次</span>
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><blockquote>
+<p>Android 4.3开始系统开放了NotificationListenerService API,让应用管理通知提供了可能，本文系统描述清理大师通知管理模块的设计与实现方式，以及开发过程中遇到问题和解决方案。</p>
+</blockquote>
+<a id="more"></a>
+<p>[TOC]</p>
+<h4 id="功能背景">功能背景</h4><h5 id="常驻通知栏">常驻通知栏</h5><p>清理大师内部一直存在一个问题就是常驻进程可能在某些条件下被kill掉，导致一些依赖常驻进程的功能失效，典型的如自动清理。由于android系统在管理内存的时候按照Low memory killer 机制来决定需要杀掉哪些进程，当系统内存不足的时候，按照oom_adj的值来判断进程的重要程度，这个值越小，表示进程越重要。而常驻通知栏的使用，可以提升进程的重要程度，因为实现上是一个前台服务，系统会认为此服务对用户来说是重要的，能一定程度上降低被系统kill掉的可能性。基于此背景，加入常驻通知栏功能对清理大师<br>的功能完善上有促进作用，并且常驻通知栏提供一些小工具入口对于产品的活跃度提升也有一定帮助。</p>
+<blockquote>
+<p>关于oom_adj的规则不在本文的讨论范围，这里不再赘述。</p>
+</blockquote>
+<h5 id="通知管理">通知管理</h5><p>基于4.3API开放的接口，我们可以对系统发送的通知进行管理。android上很多应用会发送各种各样的通知，当用户下拉statusbar，会看到很多乱七八糟的通知存在通知栏，有些用户会认为这是一件很烦人的事情，所以管理通知可以帮用户解决这个问题。</p>
+<h4 id="需求概述">需求概述</h4><ul>
+<li>提供常驻通知栏入口；</li>
+<li>通知栏每一项功能分别为：进入大师内部，加速，通知管理/闹钟，手电/wifi，系统设置；</li>
+<li>通知栏样式适配；</li>
+<li>通知拦截；<blockquote>
+<p>根据系统api对通知取消，使通知不再显示在通知栏。</p>
+</blockquote>
+</li>
+<li><p>通知缓存；</p>
+<blockquote>
+<p>缓存分为内存缓存与本地缓存，其中内存缓存带跳转信息，可以跳转到原通知的目的地，本地缓存不带跳转信息，只打开应用。</p>
+</blockquote>
+</li>
+<li><p>通知管理界面；</p>
+<blockquote>
+<p>对收到的通知界面展示，提供删除和加白功能。</p>
+</blockquote>
+</li>
+<li><p>过滤规则；</p>
+<blockquote>
+<p>运营白名单机制，系统应用，带进度的通知，空通知，已经缓存的通知。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="前期调研">前期调研</h4><p>如何获取通知？关于获取通知的原理分析参考另一篇文章<a href="http://hoyoshaw.github.io/2015/12/11/Android-4-3-NotificationListenerService-%E7%9A%84%E4%BD%BF%E7%94%A8/">Android 4.3+ NotificationListenerService 的使用</a>。</p>
+<p>对于系统回调返回的<strong>StatusBarNotification</strong>对象，通过源码可以发现里面其实是对<strong>Notification</strong>对象包装了一下，另外携带了一些基本信息。</p>
+<p>先来解决第一问题，怎么取消掉新收到的通知呢？<strong>NotificationListenerService</strong>提供了两个api，一个是取消所有通知(包括已经显示的)，一个是根据参数取消单个通知，看上去第二个比较靠谱。写个demo试一下，果然是靠谱的，发送的新通知会被取消掉。根据经验换个5.0的系统试一下，果然是取消不掉的，又换API了？查官方文档，果然是换了：</p>
+<blockquote>
+<p>This method was deprecated in API level 21.Use cancelNotification(String) instead. Beginning with LOLLIPOP this method will no longer cancel the notification. It will continue to cancel the notification for applications whose targetSdkVersion is earlier than LOLLIPOP.</p>
+</blockquote>
+<p>5.0上不支持，改用<strong>cancelNotificatio(String)</strong>代替，5.0以下老方法还有效。那就适配一下加个判断解决。</p>
+<p>接下来看第二个问题。既然对收到的通知已经取消了，怎么缓存呢？需求是要求通知要带跳转信息，分析下Notification的源码吧，看看我们能获取到什么信息。发现<strong>contentIntent</strong>，<strong>contentRemoteView</strong>比较关键。contentIntent是一个<strong>PendingIntent</strong>对象，光它的内部机制就可以单开一个博文来描述，这里粗暴的理解为四个字“异步激发”。通知我们知道是由NotificationManagerService来管理的，通常我们点击它会启动目标应用，这显然是一个跨进程调用，我们要找的跳转信息就存在pendingIntent中。查看它的源码，发现一个叫send的方法，写个demo验证一下，完美。<br>那么现在已经知道了，<strong>contentIntent</strong>这个对象是需要的，它携带了跳转信息。</p>
+<p>继续分析notification源码，发现<strong>contentRemoteView</strong>，这是一个RemoteView对象。熟悉自定义通知栏的同学应该用过这个。这个对象就是你布局的通知栏的样式。查看它的源码，发现有个<strong>apply</strong>的方法，描述如下：</p>
+<blockquote>
+<p>Inflates the view hierarchy represented by this object and applies all of the actions.</p>
+</blockquote>
+<p>这句话提供了两个信息，第一可以通过这个方法inflate出布局信息，返回一个view；<br>另外一个是<em>applies all of the actions</em>。通过返回的view，我们可以得到通知栏的布局view，那么我们就可以在界面上还原出这个通知的原样了。</p>
+<blockquote>
+<p>这里的<strong>actions</strong>很有用，后面解决一个问题就研究了它，这里先不赘述了。</p>
+</blockquote>
+<p>好了，调研到这里，我们数据已经准备好了，接下来该缓存。第一反应，我能把这些数据持久化到本地就好了，这样数据不丢失，状态也能保存，之后需要的时候读取出来。听上去不错，但是一用就犯错，自定义的对象虽然实现了序列化接口，但是pendingIntent这个对象是个<strong>Parcelable</strong>对象，没法用java的序列化方式往磁盘写，它里面携带binder对象，并且自身没有实现Serializable，直接报错！此路不行。</p>
+<p>既然这样，就只能分为两块儿缓存了。内存缓存+磁盘缓存的方式来处理。内存缓存的数据，携带了pendingInetent，可以跳转到目标应用，本地缓存只保存通知基本信息，调研基本上能满足功能需求。</p>
+<h4 id="设计思想">设计思想</h4><h5 id="缓存系统">缓存系统</h5><p>由于<strong>NotificationListenerService</strong>可以帮我们唤醒进程，并且需要有一份内存缓存，所以针对<strong>NotificationListenerService</strong>选择放在常驻进程中。缓存系统解决需要解决以下问题：</p>
+<ul>
+<li><p>内存限制</p>
+<blockquote>
+<p>出于占用内存的考虑，设计上缓存系统有上限为最新的200条通知，超过200条会移除最老的通知。</p>
+</blockquote>
+</li>
+<li><p>多线程问题</p>
+<blockquote>
+<p>service在收到通知的时候，是在binder线程中，也就是说对于缓存系统，put操作是在binder线程中完成的。而UI可以对缓存操作，UI线程可以读取，修改缓存，所以同步问题是需要解决的。有以下两种方案:<br>1.读写锁，此方式不赘述。<br>2.任务队列。既然操作缓存不再一个线程，那么就让这些操作在同一个线程中排队完成。可以使用HandlerThread的任务队列来设计。</p>
+</blockquote>
+</li>
+<li><p>跨进程传输问题</p>
+<blockquote>
+<p>由于数据在常驻进程，如果Activity也在常驻进程的话，每次开启界面退出后activity销毁内存释放得不是很及时，会导致常驻进程内存额外有UI的内存，所以对activity没有声明所属进程。那么当UI进程启动通知管理页面，需要跨进程取数据，需要用到AIDL方式。需要注意的是，binder在数据传输的时候数据大小限制为1M，而且是所有应用共享的，所以当数据过大是传输出问题的。所以缓存系统需要提供分页传输，或者单个实体传输，避免使用集合传输。</p>
+</blockquote>
+</li>
+<li><p>内存本地双缓存</p>
+<blockquote>
+<p>为了设计上方便，对于本地缓存设计成内存缓存的快照。每次更新内存缓存，同步更新本地缓存一次。这样避免设计成两份缓存，需要合并数据的麻烦。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="流程">流程</h4><p>通知管理的主要流程如下：</p>
+<p>当收到一条通知的时候，会先经过一个过滤器，通过过滤器的通知，先取消掉它在通知栏的显示，然后进入缓存系统。</p>
+<p>当界面上展示的时候，通过一个UIop的中间层访问缓存系统，并通过UIop对数据删除，加白等操作。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">st=&#62;start: Start&#10;e=&#62;end: End&#10;in=&#62;operation: onNotificationPosted&#10;filter=&#62;operation: doFilter&#10;cancle=&#62;condition: cancle?&#10;cache=&#62;subroutine: cache&#10;uiop=&#62;operation: OP&#10;UI=&#62;subroutine: UI&#10;&#10;st-&#62;in-&#62;filter-&#62;cancle&#10;cancle(yes,right)-&#62;in&#10;cancle(no)-&#62;cache&#10;cache(right)-&#62;uiop(right)-&#62;UI</span><br></pre></td></tr></table></figure>
+<h4 id="环境与配置">环境与配置</h4><p>目前清理大师依赖了额外sdk jar包，新增的<strong>NotificationListenerService</strong>在4.3以上才有，工程编译版本是4.0，所以将SDK目录下platforms/android-19的android.jar解压找出需要的class文件。按照原包名路径重新打包进android-plus.jar中。</p>
+<h4 id="踩坑与填坑">踩坑与填坑</h4><ul>
+<li><p>如何唯一区分一条通知？</p>
+<blockquote>
+<p><em>NotificationListenerService</em>服务启动后，只要有任何通知更新，都会收到一条<code>StatusBarNotification</code>,很多应用发送通知的id都是一个，根据包名与id共同判断无法做到通知唯一性，这样就不能保证进入缓存的通知实体能保证不漏、不重cache住所有收到的通知。如何来区分呢？如何来区分呢？经过一些应用尝试，统计如下这些字段共同判断能解决绝大部分。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (entity.id == <span class="keyword">this</span>.id &amp;&amp; entity.pkgName.equals(<span class="keyword">this</span>.pkgName) &amp;&amp; entity.title.equals(<span class="keyword">this</span>.title) &amp;&amp; entity.ticker.equals(<span class="keyword">this</span>.ticker)) &#123;</span><br><span class="line">           ...</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+</li>
+<li><p>解决带进度的通知</p>
+<blockquote>
+<p>带进度的通知，每次刷新的时候，<em>NotificationListenerService</em>都会收到一条通知，一般应用会有一个进度条，有些应用没有进度条，只有不断变化的百分比数字(<code>titlle</code>字段)，当然每次收到的通知按照上面的逻辑是区分不出来的，还有的进度条跟百分比都有，这就需要来抓进度条了。如何判断通知带进度条？</p>
+</blockquote>
+</li>
+</ul>
+<blockquote>
+<p>前面留下一个<strong>actions</strong>的问题，这个action是我们用来抓取是否包含进度的关键。分析RemoteView源码，发现有一个<strong>mActions</strong>字段，记录了这个view包含的一些列操作，比如setText，setSize，setMax等。这个字段是隐藏的，需要反射来解析里面的数据，然后看是否包含<code>setProgress</code>方法，通过这个标记来确定是否包含进度条。</p>
+</blockquote>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Notification/" rel="tag">#Notification</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/12/11/Android-4-3-NotificationListenerService-的使用/" rel="next">
+                Android 4.3+ NotificationListenerService 的使用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2015/12/15/通知管理功能与常驻通知栏的设计与实现/"
+     data-title="通知管理功能与常驻通知栏的设计与实现"
+     data-content=""
+     data-url="http://hoyoshaw.github.io/2015/12/15/通知管理功能与常驻通知栏的设计与实现/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+ </div>
+
+        
+            <!-- 多说热评文章-->
+            <p>热评文章</p>
+            <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+        
+
+        
+          <div class="comments" id="comments">
+            
+              <div class="ds-thread" data-thread-key="2015/12/15/通知管理功能与常驻通知栏的设计与实现/"
+                   data-title="通知管理功能与常驻通知栏的设计与实现" data-url="http://hoyoshaw.github.io/2015/12/15/通知管理功能与常驻通知栏的设计与实现/">
+              </div>
+            
+          </div>
+        
+      </div>
+
+      
+        
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.jpg" alt="Hoyo Shaw" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">Hoyo Shaw</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description">Let's walk around the world.</p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            <a href="/categories">
+              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-name">分类</span>
+              </a>
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-name">标签</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#功能背景"><span class="nav-number">1.</span> <span class="nav-text">功能背景</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#常驻通知栏"><span class="nav-number">1.1.</span> <span class="nav-text">常驻通知栏</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#通知管理"><span class="nav-number">1.2.</span> <span class="nav-text">通知管理</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#需求概述"><span class="nav-number">2.</span> <span class="nav-text">需求概述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#前期调研"><span class="nav-number">3.</span> <span class="nav-text">前期调研</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设计思想"><span class="nav-number">4.</span> <span class="nav-text">设计思想</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#缓存系统"><span class="nav-number">4.1.</span> <span class="nav-text">缓存系统</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#流程"><span class="nav-number">5.</span> <span class="nav-text">流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#环境与配置"><span class="nav-number">6.</span> <span class="nav-text">环境与配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#踩坑与填坑"><span class="nav-number">7.</span> <span class="nav-text">踩坑与填坑</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+      
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner"> <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+<div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2015</span>
+  <span class="with-love">
+    <i class="icon-next-heart fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hoyo Shaw</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io" rel="external nofollow">Hexo</a>
+</div>
+
+<div class="theme-info">
+  theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next" rel="external nofollow">
+    NexT.Mist
+  </a>
+</div>
+
+<div class="busuanzi">
+  <span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  </span>
+
+  <span id="busuanzi_container_site_uv">
+     &nbsp;     本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  </span>
+</div>
+
+
+
+
+
+
+
+ </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"hoyoshaw"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+
+    
+  
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/js/motion_global.js?v=0.4.5.2" id="motion.global"></script>
+
+
+
+
+  <script type="text/javascript" src="/js/nav-toggle.js?v=0.4.5.2"></script>
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.2" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 0.4 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    var $tocContent = $('.post-toc-content');
+    if (isDesktop() && CONFIG.sidebar === 'post') {
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+        displaySidebar();
+      }
+    }
+  });
+</script>
+
+
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      if (CONFIG.sidebar === 'always') {
+        displaySidebar();
+      }
+      if (isMobile()) {
+        FastClick.attach(document.body);
+      }
+
+      motionIntegrator.bootstrap();
+    });
+  </script>
+
+  
+  
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/lazyload.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $("#posts").find('img').lazyload({
+        placeholder: "/images/loading.gif",
+        effect: "fadeIn"
+      });
+    });
+  </script>
+</body>
+</html>
