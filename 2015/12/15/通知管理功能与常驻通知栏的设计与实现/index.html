@@ -51,7 +51,7 @@
 <meta property="og:url" content="http://hoyoshaw.github.io/2015/12/15/通知管理功能与常驻通知栏的设计与实现/index.html">
 <meta property="og:site_name" content="HoyoShaw's blog">
 <meta property="og:description" content="Android 4.3开始系统开放了NotificationListenerService API,让应用管理通知提供了可能，本文系统描述清理大师通知管理模块的设计与实现方式，以及开发过程中遇到问题和解决方案。">
-<meta property="og:updated_time" content="2015-12-15T07:50:25.966Z">
+<meta property="og:updated_time" content="2016-01-12T12:40:54.703Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="通知管理功能与常驻通知栏的设计与实现">
 <meta name="twitter:description" content="Android 4.3开始系统开放了NotificationListenerService API,让应用管理通知提供了可能，本文系统描述清理大师通知管理模块的设计与实现方式，以及开发过程中遇到问题和解决方案。">
@@ -350,7 +350,11 @@
 </li>
 <li><p>跨进程传输问题</p>
 <blockquote>
-<p>由于数据在常驻进程，如果Activity也在常驻进程的话，每次开启界面退出后activity销毁内存释放得不是很及时，会导致常驻进程内存额外有UI的内存，所以对activity没有声明所属进程。那么当UI进程启动通知管理页面，需要跨进程取数据，需要用到AIDL方式。需要注意的是，binder在数据传输的时候数据大小限制为1M，而且是所有应用共享的，所以当数据过大是传输出问题的。所以缓存系统需要提供分页传输，或者单个实体传输，避免使用集合传输。</p>
+<p>由于数据在常驻进程，如果Activity也在常驻进程的话，每次开启界面退出后activity销毁内存释放得不是很及时，会导致常驻进程内存额外有UI的内存，所以对activity没有声明所属进程。那么当UI进程启动通知管理页面，需要跨进程取数据，需要用到AIDL方式。需要注意的是，binder在数据传输的时候数据大小限制为1M，而且是进程内部所有的binder通信共享的，所以当数据过大是传输出问题的。所以缓存系统需要提供分页传输，或者单个实体传输，避免使用集合传输。<br>补充：既然传递大数据有问题，那么为什么bitmap可以传输呢？这是因为binder传输的时候对底层数据的大小做了分类，对于大型数据如bitmap，使用Ashmem匿名共享内存的方式传输的。所以，我们有两种方案：</p>
+<ul>
+<li>将数据转成bitmap格式，编码解码传输；</li>
+<li>直接使用android提供的MemoryFile传输；</li>
+</ul>
 </blockquote>
 </li>
 <li><p>内存本地双缓存</p>
@@ -557,8 +561,8 @@
 
 <div class="copyright" >
   
-  &copy; 
-  <span itemprop="copyrightYear">2015</span>
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2016</span>
   <span class="with-love">
     <i class="icon-next-heart fa fa-heart"></i>
   </span>
