@@ -1,0 +1,815 @@
+<!doctype html>
+<html class="theme-next use-motion theme-next-mist">
+<head>
+  
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+
+  
+    <link href='//fonts.lug.ustc.edu.cn/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+  
+
+
+<link rel="stylesheet" type="text/css" href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" />
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.2"/>
+
+
+    <meta name="description" content="Let's walk around the world." />
+
+
+
+  <meta name="keywords" content="Android,动画," />
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.2" />
+
+
+<meta name="description" content="Android平台的动画大体上分为View Animation 与 Property Animation 两类。对于前者的动画方式，在Android3.0之前普遍适用，此类动画只是单纯改变View在Canvas上的绘制方式，不改变View的任何属性。在3.0之后，Google推出了更强大的属性动画，可以对你想改变的任何属性做动画变换，这意味着不仅仅是对View，而是任何对象的属性！这就看出Goog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="打造自己的Android动画框架">
+<meta property="og:url" content="http://hoyoshaw.github.io/2016/02/01/打造自己的Android动画框架/index.html">
+<meta property="og:site_name" content="HoyoShaw's blog">
+<meta property="og:description" content="Android平台的动画大体上分为View Animation 与 Property Animation 两类。对于前者的动画方式，在Android3.0之前普遍适用，此类动画只是单纯改变View在Canvas上的绘制方式，不改变View的任何属性。在3.0之后，Google推出了更强大的属性动画，可以对你想改变的任何属性做动画变换，这意味着不仅仅是对View，而是任何对象的属性！这就看出Goog">
+<meta property="og:updated_time" content="2016-02-01T07:52:33.473Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="打造自己的Android动画框架">
+<meta name="twitter:description" content="Android平台的动画大体上分为View Animation 与 Property Animation 两类。对于前者的动画方式，在Android3.0之前普遍适用，此类动画只是单纯改变View在Canvas上的绘制方式，不改变View的任何属性。在3.0之后，Google推出了更强大的属性动画，可以对你想改变的任何属性做动画变换，这意味着不仅仅是对View，而是任何对象的属性！这就看出Goog">
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: 'post'
+  };
+</script>
+
+
+
+  <title> 打造自己的Android动画框架 | HoyoShaw's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+
+
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+
+<a href="https://github.com/HoyoShaw"><img style="position: absolute; top: 0; left: 0; border: 0;" src="/images/forkme_left_orange_ff7600.png" alt="Fork me on GitHub"></a>
+
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">HoyoShaw's blog</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">年轻有围，半途而肥</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tools">
+          <a href="/tools" rel="section">
+            
+              <i class="menu-item-icon fa fa-question-circle"></i> <br />
+            
+            工具
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-guestbook">
+          <a href="/guestbook" rel="section">
+            
+              <i class="menu-item-icon fa fa-question-circle"></i> <br />
+            
+            留言
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content"> 
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                打造自己的Android动画框架
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            发表于
+            <time itemprop="dateCreated" datetime="2016-02-01T14:19:59+08:00" content="2016-02-01">
+              2016-02-01
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp; 分类于
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/Android/" itemprop="url" rel="index">
+                    <span itemprop="name">Android</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/02/01/打造自己的Android动画框架/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/02/01/打造自己的Android动画框架/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          <span id="busuanzi_container_page_pv">&nbsp; | &nbsp;阅读量 <span id="busuanzi_value_page_pv"></span> 次</span>
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><p>Android平台的动画大体上分为<code>View Animation</code> 与 <code>Property Animation</code> 两类。对于前者的动画方式，在Android3.0之前普遍适用，此类动画只是单纯改变View在Canvas上的绘制方式，不改变View的任何属性。在3.0之后，Google推出了更强大的属性动画，可以对你想改变的任何属性做动画变换，这意味着不仅仅是对View，而是任何对象的属性！这就看出Google对Android平台动画框架的进一步完善。本文的主要不是讨论以上两种动画的使用方式，而是从根本上结合编程经验总结动画的核心原理，相信理解了核心原理后，你也可以打造一套自己的动画框架。</p>
+<blockquote>
+<p>关于以上两种动画的使用方式，大家可以自行google或者参照官方文档。</p>
+</blockquote>
+<a id="more"></a>
+<h3 id="抛砖引玉">抛砖引玉</h3><p>这里我先根据自己的经验，对Android的动画框架原理做一个大体上的总结：<br><code>所谓动画，就是根据时间的流逝比例，动态地改变或绘制当前时间点的‘关键帧’。</code><br>所有的动画效果都可以用这句话总结，下面对这句话按要点剖析。</p>
+<ul>
+<li><p>动画驱动器</p>
+<blockquote>
+<p>驱动器，是整个动画框架的心脏，动画执行的源动力。主要用来不断计算时间的消逝因子，让后续操作根据这个时间流逝比例做相应的处理。可以是自己实现的一个线程，可以是handler的消息模式，也可以是任何你能想到的有类似能力的方案如Scroller等。</p>
+</blockquote>
+</li>
+<li><p>动画插值器</p>
+<blockquote>
+<p>插值器，是让动画看起来更接近真实的装饰。默认没有插值的动画看起来很突兀，因为计算出的比例因子是线性变化的。有了插值器，可以对驱动器计算出的比例因子进一步根据插值函数做出变化，做出绚丽的缓动效果，更接近于真实。在3.0之前的动画框架中，Google已经帮我们实现了几种插值器，相信大家都已经知道。但是仅仅这几种插值器，完全无法应对逼格甚高的设计师嘛，这里向大家推荐一个地址：<a href="http://easings.net/zh-cn" target="_blank" rel="external">缓动函数速查表</a>。什么？看不懂？呵呵，我当时看到这个的时候也懵圈了，完全没有代码实现嘛，让我怎么玩儿。为了不挨喷，我给大家准备了另一个梯子：<a href="https://github.com/daimajia/AnimationEasingFunctions" target="_blank" rel="external">缓动函数的Android库</a>。相信有了这些，你可以应对大多数的动画需求。当然，如果这些还不能满足你的需求，那么就需要你数学知识的积累了。这些缓动函数都是数学函数的体现，所以归根结底还是数学功底，后面我会分享一种贝塞尔曲线与属性动画结合的案例，给大家一个思路。</p>
+</blockquote>
+</li>
+<li><p>动画绘制器</p>
+<blockquote>
+<p>绘制器，是完成动画关键帧的具体方式。这里的绘制有两层意思，一个是直接在canvas上的绘制，另一个是通过改变某个具体的属性。通过绘制器，动画的效果就体现出来了。针对第一种直接Canvas上的绘制，需要对Android 2D graphics包下的常用绘图API有所了解，比如Canvas、Path、Paint等，通过这些直接绘制的API，可以满足绝大多数的开发需要。</p>
+</blockquote>
+</li>
+</ul>
+<p>以上总结的三个要点，构成了动画绘制的基本原理。其实掌握了这三点，已经能够自己开发一套动画框架了，Android的属性动画原理也不外乎就这三点，下面我们来分析一下它的原理。</p>
+<h3 id="属性动画的原理">属性动画的原理</h3><p>对于android提供的属性动画，里面除了基础的<code>ValueAnimator</code>外，还有继承它的<code>ObjectAnimator</code>。在这里我不介绍ObjectAnimator的实现方式，因为其根本原理还是通过valueAnimator实现的。所以，弄清楚ValueAnimator的工作方式，就能举一反三了。</p>
+<p>我们先分析下动画的调用流程。以下代码是一个简单的使用<code>ValueAnimator</code>的方式：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">ValueAnimator animation = ValueAnimator.ofFloat(<span class="number">0f</span>, <span class="number">1f</span>);</span><br><span class="line">        animation.setDuration(<span class="number">1000</span>);</span><br><span class="line">        animation.addUpdateListener(<span class="keyword">new</span> ValueAnimator.AnimatorUpdateListener() &#123;</span><br><span class="line">            <span class="annotation">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationUpdate</span><span class="params">(ValueAnimator animation)</span> </span>&#123;</span><br><span class="line">                </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        animation.setInterpolator(<span class="keyword">new</span> BounceInterpolator());</span><br><span class="line">        animation.start();</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>注意以上代码并没有作用任何对象，只是描述了将一个float类型的数据从0在1S的时间类按照<code>BounceInterpolator</code>插值变化到1，并且监听每一帧的变化值。所以如果你要作用到具体的对象，推荐使用<code>ObjectAnimator</code>或者在<code>onAnimationUpdate</code>中自己做相应操作，熟悉使用方法的同学应该了解，这里不再赘述了。</p>
+</blockquote>
+<p>我们看到以上的一段简短使用方式，当调用了start方法后，代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">(<span class="keyword">boolean</span> playBackwards)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (Looper.myLooper() == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> AndroidRuntimeException(<span class="string">"Animators may only be run on Looper threads"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        mPlayingBackwards = playBackwards;</span><br><span class="line">        mCurrentIteration = <span class="number">0</span>;</span><br><span class="line">        mPlayingState = STOPPED;</span><br><span class="line">        mStarted = <span class="keyword">true</span>;</span><br><span class="line">        mStartedDelay = <span class="keyword">false</span>;</span><br><span class="line">        sPendingAnimations.get().add(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">if</span> (mStartDelay == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// This sets the initial value of the animation, prior to actually starting it running</span></span><br><span class="line">            setCurrentPlayTime(getCurrentPlayTime());</span><br><span class="line">            mPlayingState = STOPPED;</span><br><span class="line">            mRunning = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (mListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">                ArrayList&lt;AnimatorListener&gt; tmpListeners =</span><br><span class="line">                        (ArrayList&lt;AnimatorListener&gt;) mListeners.clone();</span><br><span class="line">                <span class="keyword">int</span> numListeners = tmpListeners.size();</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numListeners; ++i) &#123;</span><br><span class="line">                    tmpListeners.get(i).onAnimationStart(<span class="keyword">this</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        AnimationHandler animationHandler = sAnimationHandler.get();</span><br><span class="line">        <span class="keyword">if</span> (animationHandler == <span class="keyword">null</span>) &#123;</span><br><span class="line">            animationHandler = <span class="keyword">new</span> AnimationHandler();</span><br><span class="line">            sAnimationHandler.set(animationHandler);</span><br><span class="line">        &#125;</span><br><span class="line">        animationHandler.sendEmptyMessage(ANIMATION_START);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>首先就检测了调用start的线程是否是拥有looper的，这里也可以窥见动画的调用不仅仅可以是在UI线程，在一个拥有looper的非UI线程也可以调用，因为属性动画并不仅仅只服务与view，而是任何你想要对其做动画变换的对象！接下来做了一系列的状态值的初始化，然后调用了关键函数setCurrentPlayTime。这个函数把整个计算动画的变化因子流程走了一遍，下面来分析：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCurrentPlayTime</span><span class="params">(<span class="keyword">long</span> playTime)</span> </span>&#123;</span><br><span class="line">       initAnimation();</span><br><span class="line">       <span class="keyword">long</span> currentTime = AnimationUtils.currentAnimationTimeMillis();</span><br><span class="line">       <span class="keyword">if</span> (mPlayingState != RUNNING) &#123;</span><br><span class="line">           mSeekTime = playTime;</span><br><span class="line">           mPlayingState = SEEKED;</span><br><span class="line">       &#125;</span><br><span class="line">       mStartTime = currentTime - playTime;</span><br><span class="line">       animationFrame(currentTime);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数没有太复杂的逻辑，重点是最后一个函数调用：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">animationFrame</span><span class="params">(<span class="keyword">long</span> currentTime)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> done = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mPlayingState == STOPPED) &#123;</span><br><span class="line">            mPlayingState = RUNNING;</span><br><span class="line">            <span class="keyword">if</span> (mSeekTime &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                mStartTime = currentTime;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                mStartTime = currentTime - mSeekTime;</span><br><span class="line">                <span class="comment">// Now that we're playing, reset the seek time</span></span><br><span class="line">                mSeekTime = -<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">switch</span> (mPlayingState) &#123;</span><br><span class="line">        <span class="keyword">case</span> RUNNING:</span><br><span class="line">        <span class="keyword">case</span> SEEKED:</span><br><span class="line">            <span class="keyword">float</span> fraction = mDuration &gt; <span class="number">0</span> ? (<span class="keyword">float</span>)(currentTime - mStartTime) / mDuration : <span class="number">1f</span>;<span class="comment">//这里就是计算fraction的操作了，看看其实很简单，就是当前时间流逝的百分比，介于0～1之间</span></span><br><span class="line">            <span class="keyword">if</span> (fraction &gt;= <span class="number">1f</span>) &#123;<span class="comment">//接下来处理重复动画和反转动画</span></span><br><span class="line">                <span class="keyword">if</span> (mCurrentIteration &lt; mRepeatCount || mRepeatCount == INFINITE) &#123;</span><br><span class="line">                    <span class="comment">// Time to repeat</span></span><br><span class="line">                    <span class="keyword">if</span> (mListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        <span class="keyword">int</span> numListeners = mListeners.size();</span><br><span class="line">                        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numListeners; ++i) &#123;</span><br><span class="line">                            mListeners.get(i).onAnimationRepeat(<span class="keyword">this</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">if</span> (mRepeatMode == REVERSE) &#123;</span><br><span class="line">                        mPlayingBackwards = mPlayingBackwards ? <span class="keyword">false</span> : <span class="keyword">true</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    mCurrentIteration += (<span class="keyword">int</span>)fraction;</span><br><span class="line">                    fraction = fraction % <span class="number">1f</span>;</span><br><span class="line">                    mStartTime += mDuration;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    done = <span class="keyword">true</span>;</span><br><span class="line">                    fraction = Math.min(fraction, <span class="number">1.0f</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (mPlayingBackwards) &#123;</span><br><span class="line">                fraction = <span class="number">1f</span> - fraction;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//这里进行下一步对fraction的加工，其实就是用插值器计算</span></span><br><span class="line">            animateValue(fraction);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> done;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们主要关心的点是第17行，这里可以看到在计算这个动画的变化因子了，就是时间流逝的百分比。我们开篇总结过，为了使动画看起来更接近真实，使用插值器去装饰，在第42行，这里又有一个关键函数，里面其实就是通过插值器去对fraction做进一步加工：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">animateValue</span><span class="params">(<span class="keyword">float</span> fraction)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//计算的第二步：使用插值器对fraction加工</span></span><br><span class="line">       fraction = mInterpolator.getInterpolation(fraction);</span><br><span class="line">       mCurrentFraction = fraction;</span><br><span class="line">       <span class="keyword">int</span> numValues = mValues.length;</span><br><span class="line">       <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numValues; ++i) &#123;</span><br><span class="line">           <span class="comment">//计算的第三步：通过变化因子计算最终的动画值，保存在mAnimatedValue中</span></span><br><span class="line">           mValues[i].calculateValue(fraction);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">if</span> (mUpdateListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">           <span class="keyword">int</span> numListeners = mUpdateListeners.size();</span><br><span class="line">           <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numListeners; ++i) &#123;</span><br><span class="line">               <span class="comment">//回调：可以将上面mAnimatedValue的计算结果返回</span></span><br><span class="line">               mUpdateListeners.get(i).onAnimationUpdate(<span class="keyword">this</span>);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>首先通过mInterpolator计算插值后的fraction，如果没有设置插值器，默认是线性的。接下来在第8行通过calculateValue进一步计算最终的动画值，计算的结果保存在mAnimatedValue中。注意这个动画值是通过对fraction的多次加工后最终得到的是我们在ofFloat方法中传入的参数变化值，当这一系列计算完成后，回调调用者，动画的这一帧已经计算结束，可以看到<code>onAnimationUpdate(this)</code>回调的参数是this，所以你不仅仅能拿到最终的变化值mAnimatedValue，任何你感兴趣的数据都可以拿到。下面来分析<br>calculateValue函数，它最终会调用到<code>KeyframeSet</code>中的<code>getValue</code>方法。</p>
+<blockquote>
+<p>注意这个KeyframeSet，直译为关键帧集合。那么什么是关键帧呢？我们在调用ofFloat工厂方法的时候，传入的参数是一个可变参数。这些传入的参数就被定义为关键帧。简单举例，比如我们传入0，0.5，0.8，1.0四个值，那么第一个0是起始值，最后一个1.0是结束值，所有其他的值都是过渡值。所以在动画过程中，可以看成被分为了几个小块，0-0.5，0.5-0.8，0.8-1.0。对于每一个关键帧，可以设置当变化到这一帧的时候单独的插值器。例如我想在0.8-1.0这个区间按照OvershootInterpolator变化到1.0，而动画主体有一个默认的线性插值器，所以就会分别用两个插值器都要对fraction进行计算。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">getValue</span><span class="params">(<span class="keyword">float</span> fraction)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Special-case optimization for the common case of only two keyframes</span></span><br><span class="line">        <span class="comment">//只有两个关键帧的情况，就是起始值和结束值</span></span><br><span class="line">        <span class="keyword">if</span> (mNumKeyframes == <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="comment">//这里会对fraction再次用插值器加工，注意这个插值器不是动画主体的插值器，而是mLastKeyframe中设置的插值器，即为结束值这个关键帧中设置的</span></span><br><span class="line">            <span class="keyword">if</span> (mInterpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">                fraction = mInterpolator.getInterpolation(fraction);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//重点在这里：上面插值器完成加工后的fraction，会进一步用TypeEvaluator进一步计算，</span></span><br><span class="line">            <span class="keyword">return</span> mEvaluator.evaluate(fraction, mFirstKeyframe.getValue(),</span><br><span class="line">                    mLastKeyframe.getValue());</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">       ...</span><br><span class="line">       </span><br><span class="line">        Keyframe prevKeyframe = mFirstKeyframe;</span><br><span class="line">        <span class="comment">//对于传入的不仅仅是起始值和结束值的，</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; mNumKeyframes; ++i) &#123;</span><br><span class="line">            Keyframe nextKeyframe = mKeyframes.get(i);</span><br><span class="line">            <span class="keyword">if</span> (fraction &lt; nextKeyframe.getFraction()) &#123;</span><br><span class="line">                <span class="comment">//对每一个关键帧都取一下是否单独设置了插值器</span></span><br><span class="line">                <span class="keyword">final</span> TimeInterpolator interpolator = nextKeyframe.getInterpolator();</span><br><span class="line">                <span class="keyword">if</span> (interpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    fraction = interpolator.getInterpolation(fraction);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">float</span> prevFraction = prevKeyframe.getFraction();</span><br><span class="line">                <span class="keyword">float</span> intervalFraction = (fraction - prevFraction) /</span><br><span class="line">                    (nextKeyframe.getFraction() - prevFraction);</span><br><span class="line">                    <span class="comment">//最终都会调用TypeEvaluator再次计算</span></span><br><span class="line">                <span class="keyword">return</span> mEvaluator.evaluate(intervalFraction, prevKeyframe.getValue(),</span><br><span class="line">                        nextKeyframe.getValue());</span><br><span class="line">            &#125;</span><br><span class="line">            prevKeyframe = nextKeyframe;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// shouldn't reach here</span></span><br><span class="line">        <span class="keyword">return</span> mLastKeyframe.getValue();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<p>上面的代码逻辑很清晰，如果关键帧设置了插值器，先用插值器计算fraction，然后将这个fraction作为参数用TypeEvaluator再次计算。这个TypeEvaluator计算的返回结果，就是保存在<code>mAnimatedValue</code>中的，这个值就代表动画在当前时间点的最终值，我们就可以在回调函数中用这个值做出我们想要的效果了。</p>
+<p>以上就是一次动画计算的全过程。下面我们来总结一下计算流程：<br>animationFrame中会根据时间流逝与动画总时间计算当前动画时间的流逝因子fraction；<br>animateValue中会用动画整体的TimeInterpolator对fraction做第一次加工；<br>KeyframeSet中的getValue会对上一步得到的fraction再次通过每一个关键帧的TimeInterpolator先加工一次，然后将得到的值用TypeEvaluator去计算出动画的最终值。</p>
+<p>其实现在我们已经知道属性动画的每一帧变化值是如何计算的，我们其实已经可以根据上面的总结打造自己的动画框架了。现在我们先回到动画开始部分调用stat的时候，分析一下动画是如何驱动的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">(<span class="keyword">boolean</span> playBackwards)</span> </span>&#123;</span><br><span class="line">      </span><br><span class="line">      ...</span><br><span class="line">      </span><br><span class="line">        AnimationHandler animationHandler = sAnimationHandler.get();</span><br><span class="line">        <span class="keyword">if</span> (animationHandler == <span class="keyword">null</span>) &#123;</span><br><span class="line">            animationHandler = <span class="keyword">new</span> AnimationHandler();</span><br><span class="line">            sAnimationHandler.set(animationHandler);</span><br><span class="line">        &#125;</span><br><span class="line">        animationHandler.sendEmptyMessage(ANIMATION_START);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到动画是通过AnimationHandler发送一个叫ANIMATION_START的消息启动，原来属性动画框架的驱动器是用的Handler。这一部分代码比较多，感兴趣的同学自己查看源码实现，这里我只是提一下动画驱动部分：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(Message msg)</span> </span>&#123;</span><br><span class="line">           </span><br><span class="line">           ...</span><br><span class="line">            <span class="keyword">switch</span> (msg.what) &#123;</span><br><span class="line">               </span><br><span class="line">                <span class="keyword">case</span> ANIMATION_START:</span><br><span class="line">                <span class="comment">//注意这两个case之间是没有break的</span></span><br><span class="line">                <span class="keyword">case</span> ANIMATION_FRAME:</span><br><span class="line">                   ...</span><br><span class="line">                    <span class="comment">//如果还有活动的动画或延迟的动画，这里继续发送ANIMATION_FRAME消息</span></span><br><span class="line">                    <span class="keyword">if</span> (callAgain &amp;&amp; (!animations.isEmpty() || !delayedAnims.isEmpty())) &#123;</span><br><span class="line">                        sendEmptyMessageDelayed(ANIMATION_FRAME, Math.max(<span class="number">0</span>, sFrameDelay -</span><br><span class="line">                            (AnimationUtils.currentAnimationTimeMillis() - currentTime)));</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面代码省略的部分是动画如何被放到活动队列，以及执行完成的动画如何放到结束队列。这里不赘述了。</p>
+<p>好了，属性动画的核心原理已经分析完了。包括如何驱动，如何计算每一帧，至于最终的绘制动画(更新UI)，就需要根据实际需求去操作了。</p>
+<p>上面说了一大堆，主要是让大家对动画框架有一个大体的认识，把握几个核心要点，掌握这几点就可以造自己的轮子了。下面分享一个基于drawable的动画框架，将我们总结的核心知识运用到代码中去。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AnimDriver</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">long</span> duration = <span class="number">2000</span>;</span><br><span class="line">       Interpolator interpolator;</span><br><span class="line">       <span class="keyword">long</span> frameTime = <span class="number">1000</span> / <span class="number">60</span>; <span class="comment">// 60fps</span></span><br><span class="line">       Handler mHandler = <span class="keyword">new</span> Handler(Looper.getMainLooper());</span><br><span class="line">       <span class="comment">//通过调用schedule驱动动画</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">schedule</span><span class="params">(Drawable d, Runnable r)</span> </span>&#123;</span><br><span class="line">           mHandler.postAtTime(r, SystemClock.uptimeMillis() + frameTime);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="function"><span class="keyword">float</span> <span class="title">getInterpolation</span><span class="params">(<span class="keyword">float</span> ratio)</span> </span>&#123;</span><br><span class="line">           <span class="keyword">if</span> (ratio &gt; <span class="number">1</span>) &#123;</span><br><span class="line">               ratio = <span class="number">1</span>;</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="comment">//通过插值器计算</span></span><br><span class="line">           <span class="keyword">if</span> (interpolator != <span class="keyword">null</span>) &#123;</span><br><span class="line">               ratio = interpolator.getInterpolation(ratio);</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">return</span> ratio;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">float</span> <span class="title">getNormalizedTime</span><span class="params">()</span></span>;</span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">reset</span><span class="params">()</span></span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">TweenDriver</span> <span class="keyword">extends</span> <span class="title">AnimDriver</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">private</span> <span class="keyword">long</span> startTime = -<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">       <span class="annotation">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">float</span> <span class="title">getNormalizedTime</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           <span class="keyword">if</span> (duration == <span class="number">0</span>) &#123;</span><br><span class="line">               <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">long</span> current = SystemClock.uptimeMillis();</span><br><span class="line"></span><br><span class="line">           <span class="keyword">if</span> (startTime == -<span class="number">1</span>) &#123;</span><br><span class="line">               startTime = current;</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="comment">//计算动画流逝的百分比</span></span><br><span class="line">           <span class="keyword">final</span> <span class="keyword">float</span> normalizedTime = (current - startTime) * <span class="number">1.0f</span> / duration;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">return</span> normalizedTime;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="annotation">@Override</span></span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">reset</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           startTime = -<span class="number">1</span>;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>上面定义了一个简单的驱动器，在驱动器中计算了动画流逝的百分比，并且定义了插值器接口。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">       <span class="comment">//针对循环动画</span></span><br><span class="line">       <span class="keyword">if</span> (forever &amp;&amp; !isDied) &#123;</span><br><span class="line"></span><br><span class="line">           invalidateSelf();</span><br><span class="line"></span><br><span class="line">           driver.schedule(<span class="keyword">this</span>, <span class="keyword">this</span>);</span><br><span class="line">           <span class="keyword">return</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">//第一步：得到动画流逝的百分比因子</span></span><br><span class="line">       <span class="keyword">float</span> normalizedTime = driver.getNormalizedTime();</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> (normalizedTime &gt;= <span class="number">1</span>) &#123;</span><br><span class="line">           setLevel(mTargetLevel);</span><br><span class="line">           endAnimation();</span><br><span class="line">           <span class="keyword">return</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="comment">//第二步：用插值器对百分比因子进一步加工</span></span><br><span class="line">       normalizedTime = driver.getInterpolation(normalizedTime);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">final</span> <span class="keyword">int</span> level;</span><br><span class="line">       <span class="comment">//第三步：根据上面两步得到的值和动画开始与结束的值计算出当前帧的动画值(对比TypeEvaluator)</span></span><br><span class="line">       <span class="keyword">if</span> (animStyle == ANIM_STYLE_BOUNCE) &#123;</span><br><span class="line">           <span class="keyword">final</span> <span class="keyword">float</span> ratioThres = mStartLevel * <span class="number">1.0f</span> / (mTargetLevel + mStartLevel);</span><br><span class="line">           level = (<span class="keyword">int</span>) (normalizedTime &lt; ratioThres ? mStartLevel * (<span class="number">1</span> - normalizedTime / ratioThres) : mTargetLevel * (normalizedTime - ratioThres) / (<span class="number">1</span> - ratioThres));</span><br><span class="line">       &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">           level = (<span class="keyword">int</span>) (mStartLevel + (mTargetLevel - mStartLevel) * normalizedTime);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="comment">//得到的结果值更新UI</span></span><br><span class="line">       setLevel(level);</span><br><span class="line"></span><br><span class="line">       <span class="comment">//没结束的话继续驱动</span></span><br><span class="line">       <span class="keyword">if</span> (!isDied) &#123;</span><br><span class="line">           driver.schedule(<span class="keyword">this</span>, <span class="keyword">this</span>);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>我们在一个线程中完成了动画的全部操作。上面的注释解释了动画框架的核心内容，我们也差不多按照动画原理实现了一套自己的小框架。当然这个框架仅仅是对最核心的原理的代码体现，并没有考虑更多的设计性的内容，以上小框架的源码网放在了github上，感兴趣的同学可以参考。</p>
+<p>(<a href="https://github.com/HoyoShaw/LevelAnimationDrawable" target="_blank" rel="external">https://github.com/HoyoShaw/LevelAnimationDrawable</a>)</p>
+<p>好了，以上就是最动画核心原理的总结，希望对你有帮助。</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/动画/" rel="tag">#动画</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/12/15/通知管理功能与常驻通知栏的设计与实现/" rel="next">
+                通知管理功能与常驻通知栏的设计与实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="2016/02/01/打造自己的Android动画框架/"
+     data-title="打造自己的Android动画框架"
+     data-content=""
+     data-url="http://hoyoshaw.github.io/2016/02/01/打造自己的Android动画框架/">
+  <div class="ds-share-inline">
+    <ul  class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+ </div>
+
+        
+            <!-- 多说热评文章-->
+            <p>热评文章</p>
+            <div class="ds-top-threads" data-range="weekly" data-num-items="4"></div>
+        
+
+        
+          <div class="comments" id="comments">
+            
+              <div class="ds-thread" data-thread-key="2016/02/01/打造自己的Android动画框架/"
+                   data-title="打造自己的Android动画框架" data-url="http://hoyoshaw.github.io/2016/02/01/打造自己的Android动画框架/">
+              </div>
+            
+          </div>
+        
+      </div>
+
+      
+        
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/avatar.jpg" alt="Hoyo Shaw" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">Hoyo Shaw</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description">Let's walk around the world.</p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            <a href="/categories">
+              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-name">分类</span>
+              </a>
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-name">标签</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#抛砖引玉"><span class="nav-number">1.</span> <span class="nav-text">抛砖引玉</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#属性动画的原理"><span class="nav-number">2.</span> <span class="nav-text">属性动画的原理</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+      
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner"> <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+<div class="copyright" >
+  
+  &copy;  2015 - 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="icon-next-heart fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hoyo Shaw</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io" rel="external nofollow">Hexo</a>
+</div>
+
+<div class="theme-info">
+  theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next" rel="external nofollow">
+    NexT.Mist
+  </a>
+</div>
+
+<div class="busuanzi">
+  <span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  </span>
+
+  <span id="busuanzi_container_site_uv">
+     &nbsp;     本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  </span>
+</div>
+
+
+
+
+
+
+
+ </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"hoyoshaw"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+
+    
+  
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.2"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.2"></script>
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/js/motion_global.js?v=0.4.5.2" id="motion.global"></script>
+
+
+
+
+  <script type="text/javascript" src="/js/nav-toggle.js?v=0.4.5.2"></script>
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.2" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 0.4 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    var $tocContent = $('.post-toc-content');
+    if (isDesktop() && CONFIG.sidebar === 'post') {
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+        displaySidebar();
+      }
+    }
+  });
+</script>
+
+
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      if (CONFIG.sidebar === 'always') {
+        displaySidebar();
+      }
+      if (isMobile()) {
+        FastClick.attach(document.body);
+      }
+
+      motionIntegrator.bootstrap();
+    });
+  </script>
+
+  
+  
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/lazyload.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $("#posts").find('img').lazyload({
+        placeholder: "/images/loading.gif",
+        effect: "fadeIn"
+      });
+    });
+  </script>
+</body>
+</html>
