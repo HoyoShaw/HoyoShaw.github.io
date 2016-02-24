@@ -10,5 +10,5 @@ Disallow: /fonts/
 Disallow: /vendors/
 Disallow: /fancybox/
 
-Sitemap: http://hoyoshaw.github.io/sitemap.xml
-Sitemap: http://hoyoshaw.github.io/baidusitemap.xml
+Sitemap: http://hoyoshaw.github.io//sitemap.xml
+Sitemap: http://hoyoshaw.github.io//baidusitemap.xml
